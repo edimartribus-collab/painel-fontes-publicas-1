@@ -1,5 +1,5 @@
 window.DADOS = {
-  "geradoEm": "2026-10-24T17:31:07",
+  "geradoEm": "2026-10-24T17:41:29",
   "kpis": [
     {
       "rotulo": "IPCA acumulado em 12 meses",
