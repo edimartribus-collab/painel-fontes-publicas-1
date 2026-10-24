@@ -1,5 +1,5 @@
 window.DADOS = {
-  "geradoEm": "2026-10-24T01:20:15",
+  "geradoEm": "2026-10-24T01:34:46",
   "kpis": [
     {
       "rotulo": "IPCA acumulado em 12 meses",
@@ -10,6 +10,11 @@ window.DADOS = {
       "rotulo": "Selic no último mês",
       "valor": 1.08,
       "detalhe": "juros em % ao mês, em 09/2026"
+    },
+    {
+      "rotulo": "Cursos da UFG",
+      "valor": 136,
+      "detalhe": "no Censo da Educação Superior 2022"
     },
     {
       "rotulo": "Meses consolidados",
@@ -106,34 +111,14 @@ window.DADOS = {
     ]
   },
   "categorias": {
-    "titulo": "IPCA acumulado por ano, em % (último ano até 09/2026)",
+    "titulo": "Cursos da UFG por grau acadêmico (Censo 2022)",
     "rotulos": [
-      "2015",
-      "2016",
-      "2017",
-      "2018",
-      "2019",
-      "2020",
-      "2021",
-      "2022",
-      "2023",
-      "2024",
-      "2025",
-      "2026"
+      "BACHARELADO",
+      "LICENCIATURA"
     ],
     "valores": [
-      10.67,
-      6.29,
-      2.95,
-      3.75,
-      4.31,
-      4.52,
-      10.06,
-      5.78,
-      4.62,
-      4.83,
-      4.26,
-      3.95
+      81,
+      49
     ]
   },
   "fontes": [
@@ -144,6 +129,10 @@ window.DADOS = {
     {
       "nome": "Selic acumulada no mês em % (Banco Central, série SGS 4390)",
       "url": "https://api.bcb.gov.br/dados/serie/bcdata.sgs.4390/dados?formato=csv&dataInicial=01/01/2015&dataFinal=30/09/2026"
+    },
+    {
+      "nome": "Cursos da UFG no Censo da Educação Superior 2022 (dados.ufg.br)",
+      "url": "https://dados.ufg.br/dataset/943c8163-cc42-4f62-a9be-6b12fe1baab5/resource/6e56b460-6e6a-4058-833b-e3f9a197dd79/download/censo_dados_curso_2022.csv"
     }
   ]
 };

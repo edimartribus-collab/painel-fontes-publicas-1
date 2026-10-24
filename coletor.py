@@ -2,10 +2,11 @@
 # coletor.py : baixa planilhas de fontes publicas e gera os dados do painel
 # Versao em miniatura do sistema Ecoa (Internacionaliza UFG), em 3 passos:
 #   PASSO 1, BAIXAR:    cada fonte publica vira uma tabela (DataFrame)
-#   PASSO 2, ORGANIZAR: cruzamos as series por mes e resumimos por ano
+#   PASSO 2, ORGANIZAR: cruzamos as series por mes e contamos categorias
 #   PASSO 3, SALVAR:    gravamos dados/consolidado.json e dados/dados.js
 #
-# Para trocar de fonte: edite a lista FONTES e ajuste o PASSO 2 (ORGANIZAR).
+# DESAFIO DA ETAPA 6 aplicado: entrou o Censo de Cursos da UFG como 3a fonte,
+# e as categorias do painel agora contam cursos por grau academico.
 # ============================================================================
 import io
 import json
@@ -31,6 +32,14 @@ FONTES = [
         "url": ("https://api.bcb.gov.br/dados/serie/bcdata.sgs.4390/dados"
                 "?formato=csv&dataInicial=01/01/2015&dataFinal=30/09/2026"),
         "formato": "csv", "sep": ";", "decimal": ",", "encoding": "utf-8",
+    },
+    {
+        "apelido": "cursos",
+        "nome": "Cursos da UFG no Censo da Educação Superior 2022 (dados.ufg.br)",
+        "url": ("https://dados.ufg.br/dataset/943c8163-cc42-4f62-a9be-6b12fe1baab5/"
+                "resource/6e56b460-6e6a-4058-833b-e3f9a197dd79/download/"
+                "censo_dados_curso_2022.csv"),
+        "formato": "csv", "sep": ",", "decimal": ".", "encoding": "utf-8-sig",
     },
 ]
 
@@ -74,9 +83,8 @@ for fonte in FONTES:
 # =========================== PASSO 2: ORGANIZAR =============================
 print("PASSO 2: organizando e cruzando as tabelas...")
 
-# As duas fontes chegam no mesmo formato (data; valor). Renomeamos a coluna
-# valor de cada uma e cruzamos as tabelas pela data: este merge por mes
-# e o coracao da consolidacao.
+# As duas series chegam no mesmo formato (data; valor). Renomeamos a coluna
+# valor de cada uma e cruzamos as tabelas pela data: merge por mes.
 ipca = tabelas["ipca"].rename(columns={"valor": "ipca"})
 selic = tabelas["selic"].rename(columns={"valor": "selic"})
 mensal = pd.merge(ipca, selic, on="data")  # fica so o mes presente nas duas
@@ -91,12 +99,12 @@ ultimo_mes = rotulos_meses[-1]
 
 ipca_12m = acumular(mensal["ipca"].tail(12))  # KPI: inflacao de 12 meses
 
-# Resumo por categoria: o IPCA acumulado dentro de cada ano.
-mensal["ano"] = mensal["quando"].dt.year
-por_ano = mensal.groupby("ano")["ipca"].apply(acumular)
+# DESAFIO: as categorias agora contam os cursos da UFG por grau academico.
+cursos = tabelas["cursos"]
+por_grau = cursos["grau_academico"].value_counts()
 
 print(f" - series cruzadas: {len(mensal)} meses, ultimo mes {ultimo_mes}")
-print(f" - acumulado por ano: {len(por_ano)} anos")
+print(f" - cursos da UFG: {len(cursos)} no censo, {len(por_grau)} graus")
 
 # ============================= PASSO 3: SALVAR ==============================
 print("PASSO 3: salvando a pasta dados/ ...")
@@ -107,6 +115,8 @@ consolidado = {
          "detalhe": f"variação de preços em %, até {ultimo_mes}"},
         {"rotulo": "Selic no último mês", "valor": valores_selic[-1],
          "detalhe": f"juros em % ao mês, em {ultimo_mes}"},
+        {"rotulo": "Cursos da UFG", "valor": int(len(cursos)),
+         "detalhe": "no Censo da Educação Superior 2022"},
         {"rotulo": "Meses consolidados", "valor": int(len(mensal)),
          "detalhe": "presentes nas duas fontes desde 01/2015"},
     ],
@@ -118,9 +128,9 @@ consolidado = {
         ],
     },
     "categorias": {
-        "titulo": f"IPCA acumulado por ano, em % (último ano até {ultimo_mes})",
-        "rotulos": [str(ano) for ano in por_ano.index],
-        "valores": [float(v) for v in por_ano],  # numero do Python, nao do pandas
+        "titulo": "Cursos da UFG por grau acadêmico (Censo 2022)",
+        "rotulos": [str(grau) for grau in por_grau.index],
+        "valores": [int(v) for v in por_grau],  # numero do Python, nao do pandas
     },
     "fontes": [{"nome": fonte["nome"], "url": fonte["url"]} for fonte in FONTES],
 }
